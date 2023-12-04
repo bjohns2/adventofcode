@@ -222,16 +222,123 @@ def matches(card)
 end
 # puts matches("Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53")
 
-def count_score(cards)
-  score_mapping = [0,1,2,4,8,16,32,64,128, 256, 512]
+ALL_CARDS = input.split("\n")
 
-  total = 0
-  cards.split("\n").each do |card|
-    matches = matches(card)
-    num_matches = matches.size
-    total += score_mapping[num_matches]
-  end
-  total
+# def count_score(rows, iteration)
+#   indentation = ''
+#   # indentations = (-6 + cards.size).abs
+#   (0...iteration).each {|i| indentation += '-'}
+#   total = 0
+#   # puts "#{indentation}counting rows #{(iteration...(iteration+rows)).to_a}"
+#   ((iteration)...(iteration+rows)).each do |row|
+#     puts "#{indentation}checking row #{row}"
+#     card = ALL_CARDS[row]
+#     matches = matches(card)
+#     num_matches = matches.size
+#     puts "#{indentation}counting  #{card.split(':')[0]}, matches #{num_matches}, #{(1..num_matches).to_a}"
+
+#     total += num_matches
+#     total += count_score(num_matches, iteration +1) if num_matches > 0
+#     # (1..num_matches).each do |match_num|
+#     #   puts "#{indentation}for this card, conting cards from #{match_num} to end  " 
+#     #   total += count_score(1, iteration +1)
+#     # end
+#   end
+#   total
+# end
+
+# puts count_score(ALL_CARDS.size, 0)
+
+def count_score(input)
+  card_count = input.size
+  cards = (1...input.size).to_a
+  while cards.size > 0
+    card = cards.shift
+    puts "card size #{cards.size}, current card #{card}"
+
+    num_matches = matches(input[card-1]).size
+    cards_to_add = (card+1...card+num_matches+1).to_a
+    # puts "checking card #{card}, has #{num_matches} matches with cards #{cards_to_add}"
+    cards += cards_to_add
+    card_count += cards_to_add.size
+  end 
+  card_count
 end
 
-puts count_score(input)
+puts count_score(ALL_CARDS)
+
+# def memoized_count_score(input)
+#   card_count = input.size
+#   cards = (1...input.size).to_a
+#   matches_size = {}
+#   while cards.size > 0
+#     card = cards.shift
+#     puts "card size #{cards.size}, current card #{card}"
+
+#     if matches_size[card]
+#       num_matches = matches_size[card]
+#     else
+#       num_matches = matches(input[card-1]).size
+#       matches_size[card] = num_matches
+#     end
+#     cards_to_add = (card+1...card+num_matches+1).to_a
+#     # puts "checking card #{card}, has #{num_matches} matches with cards #{cards_to_add}"
+#     cards += cards_to_add
+#     card_count += cards_to_add.size
+#   end 
+#   card_count
+# end
+# puts memoized_count_score(ALL_CARDS)
+
+# def get_cards(input)
+#   input.map do |input_line|
+#     input_line.split(':')[0].split(' ')[1].to_i
+#   end
+# end
+
+# def get_cards_map(input)
+#   cards_map = {}
+#   input.each do |input_line|
+#     card_num = input_line.split(':')[0].split(' ')[1].to_i
+#     cards_map[card_num] = input_line
+#   end
+#   cards_map
+# end
+
+# def super_memoized_count_score(input)
+#   card_count = 0 #input.size
+#   cards = get_cards(input)
+#   cards_map = get_cards_map(input)
+
+#   matches_size = {}
+#   memoized_card_count = {
+#     2 => 5,
+#     3 => 4,
+#     4 => 2,
+#     5 => 1,
+#     6 => 1
+#   }
+#   while cards.size > 0
+#     card = cards.pop()
+#     # puts "popping #{card}, current count is #{card_count}"
+
+#     card_count += 1
+
+#     if matches_size[card]
+#       num_matches = matches_size[card]
+#     else
+#       num_matches = matches(cards_map[card]).size
+#       matches_size[card] = num_matches
+#     end
+#     puts "current card #{card}, card_count #{card_count} num_matches #{num_matches.to_i}"
+
+#     cards_to_add = (card+1...card+num_matches+1).to_a
+#     cards_to_add.each do |card_to_add|
+#       puts "Adding #{memoized_card_count[card_to_add]} for card #{card_to_add}"
+#       card_count += memoized_card_count[card_to_add]
+#     end
+#   end 
+#   card_count
+# end
+# puts super_memoized_count_score(ALL_CARDS.last(5))
+# puts get_cards_map(ALL_CARDS.last(5))
