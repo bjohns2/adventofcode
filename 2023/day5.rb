@@ -40,6 +40,9 @@
 # end
 # seeds = "79 14 55 13"
 
+seeds = "3136945476 509728956 1904897211 495273540 1186343315 66026055 1381149926 11379441 4060485949 190301545 444541979 351779229 1076140984 104902451 264807001 60556152 3676523418 44140882 3895155702 111080695"
+seeds_v2 = [(3136945476...3136945476+509728956), (1904897211...1904897211+495273540), (1186343315...1186343315+66026055), (1381149926...1381149926+11379441), (4060485949...4060485949+190301545),(444541979...444541979+351779229),(1076140984...1076140984+104902451),(264807001...264807001+60556152), (3676523418...3676523418+44140882),(3895155702...3895155702+111080695)]
+
 # seed-to-soil map:
 # 50 98 2
 # 52 50 48
@@ -97,15 +100,33 @@ end
 
 def convert_seeds_to_location(seeds)
   soil = convert_sources_to_destination(seeds, convert_map_to_ranges(seed_to_soil_map))
+  puts "converted to soil"
   fert = convert_sources_to_destination(soil, convert_map_to_ranges(soil_to_fertilizer_map))
+  puts "converted to fert"
   water = convert_sources_to_destination(fert, convert_map_to_ranges(fertilizer_to_water_map))
+  puts "converted to water"
   light = convert_sources_to_destination(water, convert_map_to_ranges(water_to_light_map))
+  puts "converted to light"
   temp = convert_sources_to_destination(light, convert_map_to_ranges(light_to_temperature_map))
+  puts "converted to temp"
   humidity = convert_sources_to_destination(temp, convert_map_to_ranges(temperature_to_humidity_map))
+  puts "converted to humidity"
   location = convert_sources_to_destination(humidity, convert_map_to_ranges(humidity_to_location_map))
   location
 end
 
-puts convert_seeds_to_location(seeds.split(' ').map(&:to_i)).join(',')
+# puts convert_seeds_to_location(seeds.split(' ').map(&:to_i)).join(',')
 
-puts convert_seeds_to_location(seeds.split(' ').map(&:to_i)).min
+puts "starting seeds[9]"
+puts convert_seeds_to_location(seeds_v2[9]).min
+
+# seeds[0]: 69323688
+# seeds[1]: 
+# seeds[2]: 2221744254
+# seeds[3]: 1747424143 # submitted; this answer is too high
+# seeds[4]: 1826869889
+# seeds[5]:  219649502 # submitted; this answer is too high
+# seeds[6]: 3494092106
+# seeds[7]:  475615938 # submitted; this answer is too high
+# seeds[8]: 2727172076
+# seeds[9]: 2285358106
