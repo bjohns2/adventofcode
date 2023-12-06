@@ -1,7 +1,8 @@
 input = "Time:        35     69     68     87
 Distance:   213   1168   1086   1248"
 
-input_formatted = [[35,213], [69,1169], [68,1086], [87,1248]]
+# input_formatted = [[35,213], [69,1169], [68,1086], [87,1248]]
+input_formatted = [[35696887,213116810861248]]
 
 all_winning_ways = 1
 input_formatted.each do |race|
