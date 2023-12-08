@@ -4,6 +4,17 @@ AAA = (BBB, BBB)
 BBB = (AAA, ZZZ)
 ZZZ = (ZZZ, ZZZ)"
 
+test_input2 = "LR
+
+11A = (11B, XXX)
+11B = (XXX, 11Z)
+11Z = (11B, XXX)
+22A = (22B, XXX)
+22B = (22C, 22C)
+22C = (22Z, 22Z)
+22Z = (22B, 22B)
+XXX = (XXX, XXX)"
+
 input = "LLRLRRRLLRRRLRRLRRLRLRRRLRRRLRLLRLRRLRRLRLLRRLRRRLRRLRLRLRLRRRLRRLRLLLRRLRRRLLLRLRRRLRRRLLRRLRRRLRLRRRLLLRRLLRRLRRLLLRRRLRRRLRRRLRRLLRLRLRLRRRLRLRLRRLRRLRLRRRLRRLRRRLRRRLLLRLRRLRRLRLLRRLLRRLRRLLRLRRLRRLRLRLLLRLLRRLRRLRRRLLRRLLRRRLRRLRRRLRRRLLRRRLRRRLLRRRLRLRLLRRLRLRLRRRR
 
 CGM = (SFJ, BVH)
@@ -827,38 +838,45 @@ def format_input(input)
   directions = lines[0]
   nodes = lines.drop(2)
   node_map = {}
-  start_node = nil
+  start_nodes = []
   nodes.each do |node|
     node_name = node.split(' ')[0]
     node_left =  node.split(' ')[2][1..-2]
     node_right = node.split(' ')[3][0..-2]
     node_map[node_name] = [node_left, node_right]
-    start_node = node_name if start_node == nil
+    start_nodes << node_name if node_name.split('')[2] == "A"
   end
-  [directions, node_map, start_node]
+  [directions, node_map, start_nodes]
 end
 
 def count_steps(input)
   formatted_input = format_input(input)
   directions = formatted_input[0]
   nodes = formatted_input[1]
-  start_node = formatted_input[2]
-  current_node = 'AAA'
+  start_nodes = formatted_input[2]
+  current_nodes = start_nodes
   count = 0
   
   while true
     directions.split('').each do |direction|
-      if direction == 'L'
-        current_node = nodes[current_node][0]
-      else # R
-        current_node = nodes[current_node][1]
+      # puts current_nodes.join(',')
+      current_nodes = current_nodes.map do |current_node|
+        if direction == 'L'
+          nodes[current_node][0]
+        else # R
+          nodes[current_node][1]
+        end
       end
       count += 1
-      return count if current_node == 'ZZZ'
-      puts "count at #{count}" if count % 10000000 == 0
+      return count if current_nodes.all?{|node| node[-1] == 'Z'}
+      puts "at #{count} some nodes match: #{current_nodes}" if current_nodes.any?{|node| node[-1] == 'Z'}
+      # puts "count at #{count}" if count % 1000000 == 0
     end
   end
 end
 
 puts count_steps(input)
-# 470000000 is too high
+# 470000000 is too high for part 1
+# 10000000 is too low for part 2
+# 118000000 is too low for part 2
+# 1462000000 is too low
