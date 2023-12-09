@@ -230,5 +230,24 @@ def calculate_all_nexts(input)
   total
 end
 
-puts calculate_all_nexts(input)
+# puts calculate_all_nexts(input)
 
+def calculate_prior(nums)
+  if nums.uniq == [0]
+    return 0
+  end
+  next_differences = find_differences(nums)
+  prior_num = nums[0] - calculate_prior(next_differences)
+  prior_num
+end
+
+def calculate_all_priors(input)
+  total = 0
+  lines = input.split("\n")
+  lines.each do |line|
+    total += calculate_prior(line.split(' ').map(&:to_i))
+  end
+  total
+end
+
+puts calculate_all_priors(input)
