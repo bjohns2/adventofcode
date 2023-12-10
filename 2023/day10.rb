@@ -193,12 +193,13 @@ def find_start_direction(parsed_input, start)
   end
 end
 
+SEEN_CHARS = ['seen|', 'seen-', 'seenL', 'seenJ', 'seen7', 'seenF', 'S', 'seenS']
 
 def find_next_pipe(parsed_input, current_pipe_loc)
   start = current_pipe_loc
   current_pipe = parsed_input[start[0]][start[1]]
   if current_pipe == '|'
-    if !['seen','S'].include? parsed_input[start[0]-1][start[1]] #up
+    if !SEEN_CHARS.include? parsed_input[start[0]-1][start[1]] #up
       return [start[0]-1,start[1]]
     else
       return [start[0]+1,start[1]] # down
@@ -206,7 +207,7 @@ def find_next_pipe(parsed_input, current_pipe_loc)
   end
 
   if current_pipe == '-'
-    if !['seen','S'].include? parsed_input[start[0]][start[1]-1]  #left
+    if !SEEN_CHARS.include? parsed_input[start[0]][start[1]-1]  #left
       return [start[0],start[1]-1]
     else
       return [start[0],start[1]+1] # right
@@ -214,7 +215,7 @@ def find_next_pipe(parsed_input, current_pipe_loc)
   end
 
   if current_pipe == 'L'
-    if !['seen','S'].include? parsed_input[start[0]-1][start[1]]  #up
+    if !SEEN_CHARS.include? parsed_input[start[0]-1][start[1]]  #up
       return [start[0]-1,start[1]]
     else
       return [start[0],start[1]+1] # right
@@ -222,7 +223,7 @@ def find_next_pipe(parsed_input, current_pipe_loc)
   end
 
   if current_pipe == 'J'
-    if !['seen','S'].include? parsed_input[start[0]-1][start[1]] #up
+    if !SEEN_CHARS.include? parsed_input[start[0]-1][start[1]] #up
       return [start[0]-1,start[1]]
     else
       return [start[0],start[1]-1] # left
@@ -230,7 +231,7 @@ def find_next_pipe(parsed_input, current_pipe_loc)
   end
 
   if current_pipe == '7'
-    if !['seen','S'].include? parsed_input[start[0]][start[1]-1]  #left
+    if !SEEN_CHARS.include? parsed_input[start[0]][start[1]-1]  #left
       return [start[0],start[1]-1]
     else
       return [start[0]+1,start[1]] # down
@@ -238,7 +239,7 @@ def find_next_pipe(parsed_input, current_pipe_loc)
   end
 
   if current_pipe == 'F' 
-    if !['seen','S'].include? parsed_input[start[0]][start[1]+1] #right
+    if !SEEN_CHARS.include? parsed_input[start[0]][start[1]+1] #right
       return [start[0],start[1]+1]
     else
       return [start[0]+1,start[1]] # down
@@ -249,21 +250,92 @@ end
 def solve_input(input)
   parsed_input = parse_input(input)
   start = find_start(parsed_input)
-  puts "start pipe #{start.join(',')}: #{parsed_input[start[0]][start[1]]}"
   current_pipe = find_start_direction(parsed_input, start)
   max_length = 1
   while current_pipe != nil && max_length < 40000
-    puts "current pipe #{current_pipe.join(',')}: #{parsed_input[current_pipe[0]][current_pipe[1]]}"
     old_pipe = current_pipe
     current_pipe = find_next_pipe(parsed_input, current_pipe)
-    parsed_input[old_pipe[0]][old_pipe[1]] = 'seen'
-
-    max_length += 1
-    # puts "new current pipe #{current_pipe.join(',')}: #{parsed_input[current_pipe[0]][current_pipe[1]]}"
+    old_pipe_char = parsed_input[old_pipe[0]][old_pipe[1]]
+    parsed_input[old_pipe[0]][old_pipe[1]] = "seen#{old_pipe_char}"
   end
-  puts "max_length: #{max_length}"
-  puts "max_length/2: #{max_length/2}"
+
+  marked_seen = parsed_input
+  marked_seen_printed = marked_seen.map{|line| line.join(',')}.join("\n")
+  # puts "marked seen: \n#{marked_seen_printed}"
+
+  insides = 0
+  parsed_input.each_with_index do |line, i|
+    line_count = 0
+    currently_inside = false
+    looking_for_down = false
+    looking_for_up = false
+    line.each_with_index do |char, j|
+      if char == 'seen|'
+        currently_inside = !currently_inside
+      elsif char == 'seenL'
+        looking_for_down = true
+        looking_for_up = false
+      elsif char == 'seen7' && looking_for_down == true
+        currently_inside = !currently_inside
+        looking_for_down = false
+        looking_for_up = false
+      elsif char == 'seenF'
+        looking_for_up = true
+        looking_for_down = false
+      elsif char == 'seenJ' && looking_for_up == true
+        currently_inside = !currently_inside
+        looking_for_down = false
+        looking_for_up = false
+      elsif char != 'seen-'
+        looking_for_down = false
+        looking_for_up = false
+      end
+
+      # puts "char #{char} currently_inside: #{currently_inside}" if currently_inside
+
+      if !char.include?('seen') && char != 'S' && currently_inside
+        parsed_input[i][j] = 'IN'
+        insides += 1
+      end
+    end
+  end
+  marked_inside = parsed_input
+  marked_inside_printed = marked_seen.map{|line| line.join(',')}.join("\n")
+  # puts "\n\nmarked inside: \n#{marked_inside_printed}"
+  puts "insides:#{insides}"
 end
+
+p2_input = "..........
+.S------7.
+.|F----7|.
+.||OOOO||.
+.||OOOO||.
+.|L-7F-J|.
+.|II||II|.
+.L--JL--J.
+.........."
+
+p2_input2 = ".F----7F7F7F7F-7....
+.|F--7||||||||FJ....
+.||.FJ||||||||L7....
+FJL7L7LJLJ||LJ.L-7..
+L--J.L7...LJS7F-7L7.
+....F-J..F7FJ|L7L7L7
+....L7.F7||L7|.L7L7|
+.....|FJLJ|FJ|F7|.LJ
+....FJL-7.||.||||...
+....L---J.LJ.LJLJ..."
+
+p2_input3 = "FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJIF7FJ-
+L---JF-JLJIIIIFJLJJ7
+|F|F-JF---7IIIL7L|7|
+|FFJF7L7F-JF7IIL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L"
 
 solve_input(my_input)
 # not 8
