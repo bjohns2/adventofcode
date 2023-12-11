@@ -164,7 +164,7 @@ my_input = ".........................#.........#..................#.............
 .............#.............................................#.............................................#.................#................
 "
 
-def expanded(map)
+def rows_cols_expanded(map)
   empty_rows = []
   empty_cols = (0...(map.first.size)).to_a
   map.each_with_index do |line, i|
@@ -173,35 +173,63 @@ def expanded(map)
       empty_cols.delete(j) if char != '.'
     end
   end
-  # puts "empty_rows: #{empty_rows.join(',')}"
-  # puts "empty_cols: #{empty_cols.join(',')}"
-  empty_rows.reverse.each do |empty_row_index|
-    empty_row = ['.']*(map.first.size)
-    map.insert(empty_row_index, empty_row)
-  end
 
-
-  map.each do |line|
-    empty_cols.reverse.each do |empty_col_index|
-      line.insert(empty_col_index, '.')
-    end
-
-  end
-
-  map
+  [empty_rows, empty_cols]
 end
 
 def format_input(input)
   input.split("\n").map{|line| line.split('')}
 end
 
-def calculate_distance(first_loc, second_loc)
-  distance = (first_loc[0] - second_loc[0]).abs + (first_loc[1] - second_loc[1]).abs 
+EXPANSION_MULTIPLIER = 1000000
+
+def calculate_distance(first_loc, second_loc, rows_to_expand, cols_to_expand)
+  distance = 0
+  # distance = (first_loc[0] - second_loc[0]).abs + (first_loc[1] - second_loc[1]).abs 
+  # # puts "g1: #{first_loc[0]},#{first_loc[1]} / g2: #{second_loc[0]},#{second_loc[1]} / distance #{distance}"
+  # puts "g1: #{first_loc[0]},#{first_loc[1]} / g2: #{second_loc[0]},#{second_loc[1]}"
+
+  if second_loc[0] > first_loc[0]
+    start_row = first_loc[0]
+    end_row = second_loc[0]
+  else
+    start_row = second_loc[0]
+    end_row = first_loc[0]
+  end
+  (start_row...end_row).each do |row_i|
+    if rows_to_expand.include? row_i
+      # puts "adding 2 for row #{row_i}"
+      distance += EXPANSION_MULTIPLIER
+    else
+      # puts "adding 1 for row #{row_i}"
+      distance += 1
+    end
+  end
+
+  # distance += 1 if first_loc[0] != second_loc[0] || first_loc[1] != second_loc[1]
+  if second_loc[1] > first_loc[1]
+    start_col = first_loc[1]
+    end_col = second_loc[1]
+  else
+    start_col = second_loc[1]
+    end_col = first_loc[1]
+  end
+  (start_col...end_col).each do |col_i|
+    if cols_to_expand.include? col_i
+      # puts "adding 2 for col #{col_i}"
+      distance += EXPANSION_MULTIPLIER
+    else
+      # puts "adding 1 for col #{col_i}"
+      distance += 1
+    end
+  end
+  # distance += 1 if first_loc[1] != second_loc[1]
+
   # puts "g1: #{first_loc[0]},#{first_loc[1]} / g2: #{second_loc[0]},#{second_loc[1]} / distance #{distance}"
   distance
 end
 
-def count_distances(map)
+def count_distances(map, rows_to_expand, cols_to_expand)
   galaxy_locations = []
   map.each_with_index do |line, i|
     line.each_with_index do |char, j|
@@ -214,7 +242,7 @@ def count_distances(map)
     # puts i
     # puts galaxy_locations[(i+1)..-1]&.map{|loc| loc.join(',')}&.join(' -- ')
     galaxy_locations[(i+1)..-1]&.each do |second_loc|
-      total_distance += calculate_distance(first_loc, second_loc)
+      total_distance += calculate_distance(first_loc, second_loc, rows_to_expand, cols_to_expand)
     end
   end
   total_distance
@@ -222,8 +250,15 @@ end
 
 def solution(input)
   map = format_input(input)
-  map = expanded(map)
-  count_distances(map)
+  rows_cols_to_expand = rows_cols_expanded(map)
+  rows_to_expand = rows_cols_to_expand[0]
+  cols_to_expand = rows_cols_to_expand[1]
+
+  # puts "map:"
+  # puts map.map{|loc| loc.join('')}.join("\n")
+  # puts "rows_to_expand: #{rows_to_expand.join(',')}"
+  # puts "cols_to_expand: #{cols_to_expand.join(',')}"
+  count_distances(map, rows_to_expand, cols_to_expand)
 end
 
 puts solution(my_input)
