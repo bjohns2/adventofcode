@@ -26,12 +26,60 @@ def hash_algo(step)
   current_value
 end
 
-def solution(input)
-  steps = input.delete("\n").split(',')
-  steps.sum do |step|
-    hash_algo(step)
+def calculate_power(boxes)
+  total_power = 0
+  l_count = 0
+  # boxes.each do |box_num, lenses|
+  (0..256).each do |box_num|
+    lenses = boxes[box_num]
+    puts "#{box_num}: #{lenses}"
+    lenses.each_with_index do |lense, i|
+      total_power += (box_num + 1) * (i + 1) * (lense.split(' ')[1].to_i)
+      puts "total_power += #{(box_num + 1)} * #{(i + 1)} * #{(lense.split(' ')[1].to_i)} = #{total_power}" # if box_num == 160
+      l_count += 1
+    end
   end
+  puts "#{l_count} lenses"
+  total_power
+end
+
+def solution(input)
+  boxes = Hash.new { |h, k| h[k] = [] }
+  steps = input.delete("\n").split(',')
+  puts "#{steps.size} steps"
+  steps.each do |step|
+    if step.include?('-')
+      label = step.split('-')[0]
+      box = hash_algo(label)
+      old_box = boxes[box].dup
+      boxes[box].delete_if {|lense| lense[0..-3] == label}
+      puts "[#{step}]removing #{label} from box #{box}, was #{old_box} now #{boxes[box]}" if old_box.size < boxes[box].size - 1
+      puts "hey! #{step}" if step.size != label.size+1
+    elsif step.include?('=')
+      label = step.split('=')[0]
+      lense_num = step.split('=')[1]
+      puts "hey! #{step}" if step.size != label.size+2
+      puts "hey! #{step}" if lense_num.size != 1
+
+      box = hash_algo(label)
+      existing_lense_index = boxes[box].find_index {|lense| lense[0..-3] == label}
+      
+      if existing_lense_index
+        boxes[box][existing_lense_index] = "#{label} #{lense_num}"
+      else
+        boxes[box] << "#{label} #{lense_num}"
+      end
+      puts "adding #{step} to box #{box}, now #{boxes[box].join(',')}" if box == 160
+    else
+      puts "what the heck?? #{step}"
+    end
+    # puts "label: #{label}"
+
+  end
+  # boxes.map{|k,v| puts "#{k}: #{v}"}
+  calculate_power(boxes)
 end
 
 puts solution(my_input)
-# 506543 too high
+# 285036 too low
+# 285036
