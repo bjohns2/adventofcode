@@ -1007,15 +1007,16 @@ my_input = "?.?????#???#? 1,1,2,2
 #???.#?#.#??#??#.?? 4,1,1,5,1,1
 "
 
-def valid_permutation?(potential_springs, group_sizes)
+def valid_permutation?(springs, new_spring_locations, group_sizes)
   current_group = 0
   counted_groups = []
-  potential_springs.each do |spring_char|
-    if spring_char == '#'
+  springs.each_with_index do |spring_char, i|
+    if spring_char == '#' || new_spring_locations.include?(i)
       current_group += 1
     else
       counted_groups << current_group if current_group != 0
       current_group = 0
+      return false if group_sizes.first(counted_groups.size) != counted_groups
     end
   end
   counted_groups << current_group if current_group != 0
@@ -1023,45 +1024,128 @@ def valid_permutation?(potential_springs, group_sizes)
   counted_groups == group_sizes
 end
 
+def valid_remainder?(springs, group_sizes)
+  current_group = 0
+  counted_groups = []
+  springs.each_with_index do |spring_char, i|
+    if spring_char == '#' || spring_char == '?'
+      current_group += 1
+    else
+      counted_groups << current_group if current_group != 0
+      current_group = 0
+    end
+  end
+  counted_groups << current_group if current_group != 0
+  puts "checking valid remainder: #{counted_groups == group_sizes} (#{springs.join('')}, #{group_sizes.join(',')})"
+  counted_groups == group_sizes
+end
+
+def count_permutations(springs,locations_of_possible_springs, group_sizes, unknown_spring_count )
+  puts "springs: #{springs&.join('')}, locations_of_possible_springs: #{locations_of_possible_springs}, unknown_spring_count: #{unknown_spring_count}, group_sizes: #{group_sizes&.join(',')}"
+
+  if springs == nil
+    # puts "springs nil"
+    return 0
+  end
+  # puts "springs[0...group_sizes[0]] #{springs[0...group_sizes[0]]}"
+  if springs[0...group_sizes[0]].uniq == ['#']
+    puts "next #{group_sizes[0]} are #, next"
+    updated_locations_of_possible_springs = locations_of_possible_springs.map{|loc| loc - group_sizes[0] }.filter{|loc| loc >= 0}
+    count_permutations(springs[group_sizes[0]..-1],updated_locations_of_possible_springs, group_sizes[1..-1], unknown_spring_count )
+  end
+
+  if springs[0] == '.'
+    puts "next is ., next"
+    updated_locations_of_possible_springs = locations_of_possible_springs.map{|loc| loc -1}.filter{|loc| loc >= 0}
+    count_permutations(springs[1..-1],updated_locations_of_possible_springs, group_sizes, unknown_spring_count )
+  end
+  # puts "calling count_permutations with #{springs.join('')} -- #{locations_of_possible_springs.join(',')}  -- #{group_sizes.join(',')}"
+
+  if unknown_spring_count == 0 # on the 9th iteration, you can't place any more springs or further iterate
+    puts "unknown_spring_count == 0"
+    return 1 if valid_remainder?(springs, group_sizes)
+  end
+
+  if group_sizes == nil || group_sizes == []
+    puts "matched all gropus without springs"
+    return 0
+  end
+  if locations_of_possible_springs == nil || locations_of_possible_springs == []
+    # puts "locations_of_possible_springs nil"
+    return 0
+  end
+
+
+  # puts "remaining group sizes:#{group_sizes.join(',')} "
+  this_group_size = group_sizes[0]
+  this_location = locations_of_possible_springs[0]
+  valid_permutations = 0
+
+  cloned_springs = springs.clone
+
+  cloned_springs[this_location] = '#'
+
+  # locations_of_possible_springs.each_with_index do |location, i|
+  current_group = 0
+  cloned_springs.each_with_index do |spring_char, j|
+    if spring_char == '#'
+      current_group += 1
+    else
+      if current_group > 0 # if we found a group...
+        # puts "found a group of size #{current_group}, expected #{this_group_size}"
+        if current_group != this_group_size  #   ... of the wrong size
+          valid_permutations += 0
+        else #   ... of the right size
+          # puts "cloned_springs: #{cloned_springs.join('')}, locations_of_possible_springs: #{locations_of_possible_springs}"
+          puts "found a group of size #{current_group}! checking next spots"
+          if group_sizes[1..-1] == []
+            puts "FOUND VALID PERMUTATION! #{locations_of_possible_springs}"
+            return 1
+          end
+          updated_locations_of_possible_springs = locations_of_possible_springs.map{|loc| loc - j -1}.filter{|loc| loc >= 0}
+          # puts "updated_locations_of_possible_springs: #{updated_locations_of_possible_springs.join(',')}"
+          if updated_locations_of_possible_springs == [] && unknown_spring_count == 1
+            puts 'FOUND VALID 2'
+            return 1 if valid_remainder?(springs, group_sizes)
+          end
+          updated_locations_of_possible_springs[0..-1].each_with_index do |location, i|
+            valid_permutations += count_permutations(cloned_springs[j+1..-1],updated_locations_of_possible_springs[i..-1],  group_sizes[1..-1], unknown_spring_count - 1)
+            puts "TOTAL VALID COUNT #{valid_permutations} for stack level #{unknown_spring_count}"
+          end
+          puts "TOTAL post-loop VALID COUNT #{valid_permutations} for stack level #{unknown_spring_count}"
+
+          break
+        end
+      end
+    end
+  end
+
+  valid_permutations
+end
+
 def count_arrangements_for_row(row)
-  springs = row.split(' ')[0].split('')
-  group_sizes = row.split(' ')[1].split(',').map(&:to_i)
+  folded_springs = row.split(' ')[0].split('')
+  folded_group_sizes = row.split(' ')[1].split(',').map(&:to_i)
+
+  springs = folded_springs.map(&:clone) + ['?'] + folded_springs.map(&:clone) + ['?'] + folded_springs.map(&:clone) + ['?'] + folded_springs.map(&:clone) + ['?'] + folded_springs.map(&:clone)
+  group_sizes = folded_group_sizes.map(&:clone) + folded_group_sizes.map(&:clone) + folded_group_sizes.map(&:clone) + folded_group_sizes.map(&:clone) + folded_group_sizes.map(&:clone)
 
   total_springs = group_sizes.sum
   known_springs = springs.count('#')
-  possible_springs = springs.count('?')
+  # possible_springs = springs.count('?')
   unknown_spring_count = total_springs - known_springs
   locations_of_possible_springs = springs.each_index.select{|i| springs[i] == '?'}
-  # puts "springs: #{springs.join('')}"
-  # puts "group_sizes: #{group_sizes.join(',')}"
-  # puts "total_springs: #{total_springs}"
-  # puts "known_springs: #{known_springs}"
-  # puts "unknown_spring_count: #{unknown_spring_count}"
-  puts "possible_springs: #{possible_springs}"
 
-
-  permutations = locations_of_possible_springs.combination(unknown_spring_count)
-
-  # puts "permutations: #{ permutations.map{|p| p.join(',')}.join('---') }"
-  
-  puts "checking #{permutations.size} permutations"
   valid_permutations = 0
-  permutations.each do |new_spring_locations|
-    potential_springs = springs.map.with_index do |spring_char, i|
-      if new_spring_locations.include?(i)
-        '#'
-      elsif spring_char == '?'
-        '.'
-      else
-        spring_char
-      end
-    end
-
-    # puts "potential_springs: #{potential_springs.join('')}"
-
-    valid_permutations += 1 if valid_permutation?(potential_springs, group_sizes)
-
+  # puts "checking locations_of_possible_springs #{locations_of_possible_springs.join(',')}"
+  locations_of_possible_springs.first(1).each_with_index do |location, i|
+    puts " -------- checking new starting spot -------- "
+    valid_permutations += count_permutations(springs,locations_of_possible_springs[i..-1], group_sizes, unknown_spring_count)
   end
+  # valid_permutations = count_permutations(springs,locations_of_possible_springs, 0, group_sizes)
+
+
+
   puts "#{valid_permutations} valid_permutations for row #{springs.join('')}"
   valid_permutations
 end
@@ -1069,10 +1153,10 @@ end
 def count_arrangements(input)
   rows = input.split("\n")
   total = 0
-  rows.each do |row|
+  rows.first(1).each do |row|
     total += count_arrangements_for_row(row)
   end
   total
 end
 
-puts count_arrangements(my_input)
+puts count_arrangements(test_input)
