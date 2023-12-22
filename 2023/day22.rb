@@ -1388,6 +1388,27 @@ def can_disintegrate?(brick, bricks)
   return true
 end
 
+def settle_bricks_with_count(bricks)
+  brick_ids_moved = []
+  brick_moved_down_last_round = true
+  while brick_moved_down_last_round
+    brick_moved_down_last_round = false
+    bricks.each do |brick|
+      if can_fall_one?(brick, bricks)
+        brick_ids_moved << brick.id
+        brick_moved_down_last_round = true
+        brick.move_down
+      end
+    end
+  end
+  brick_ids_moved.uniq.size
+end
+
+def count_bricks_fall_if_disintegrated(brick, bricks)
+  other_bricks = bricks - [brick]
+  cloned_other_bricks = other_bricks.map(&:clone)
+  settle_bricks_with_count(cloned_other_bricks)
+end
 
 def solution(input)
   bricks = parse_input(input)
@@ -1395,20 +1416,21 @@ def solution(input)
 
   puts "original bricks: "
   bricks.each{|b| puts b}
-  
+
   puts "settled bricks: "
   settle_bricks(bricks) 
   bricks.each{|b| puts b}
 
   count = 0
   bricks.each do |brick|
-    if can_disintegrate?(brick, bricks)
-      # puts "can disintegrate brick #{brick.id}"
-      count += 1
-    end
+    count_for_brick = count_bricks_fall_if_disintegrated(brick, bricks)
+    puts "disintegratring brick #{brick.id} would cause #{count_for_brick} to settle"
+    count += count_for_brick
   end
 
   puts "count: #{count}"
 end
 
 solution(my_input)
+
+# 48301 is too low
