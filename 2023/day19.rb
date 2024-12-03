@@ -829,4 +829,198 @@ def solution(input)
   puts total
 end
 
-solution(my_input)
+# px{a<2006:qkq,m>2090:A,rfg}
+# pv{a>1716:R,A}
+# lnx{m>1548:A,A}
+# rfg{s<537:gd,x>2440:R,A}
+# qs{s>3448:A,lnx}
+# qkq{x<1416:A,crn}
+# crn{x>2662:A,R}
+# in{s<1351:px,qqz}
+# qqz{s>2770:qs,m<1801:hdj,R}
+# gd{a>3333:R,R}
+# hdj{m>838:A,pv}
+
+def get_paths_to_target(target, workflows)
+  valid_paths = [[target,[]]]
+  workflows.each do |name, conditions|
+    # puts "#{name}: #{conditions}"
+    conditions.each do |condition|
+      if condition[3] == target
+        category = condition[0]
+        comparator = condition[1]
+        comparator_value = condition[2]
+        destination_workflow = condition[3]
+        # puts "can get to #{target} from #{name} by #{condition[0..-2].join('')}"
+        paths_to_target = get_paths_to_target(name, workflows)
+        paths_to_target.each do |path_to_target|
+          path = "#{target}<-" + path_to_target[0]
+          conditions = [condition[0..-2]] + path_to_target[1]
+          # puts "new path: #{target} plus #{path_to_target[0]} equals #{path}"
+          valid_paths << [path, conditions]
+        end
+
+      else
+        ['','']
+      end
+    end
+  end
+  # puts "returning valid_paths #{valid_paths}"
+  valid_paths
+end
+
+def range_overlap(r1, r2)
+  [r1.min, r2.min].max..[r1.max, r2.max].min
+end
+
+def get_ranges_for_path(path)
+  conditions = path[1]
+  groups = conditions.group_by{|c| c[0]}
+  # groups.each do |condition_value,conditions|
+  #   puts "#{condition_value}: #{conditions.map{|c| c.join('')}.uniq.join(',')}"
+  # end
+  x_range = (1..4000)
+  groups['x']&.each do |condition|
+    if condition[1] == '<'
+      x_range = range_overlap(x_range, (0...condition[2]))
+    else #>
+      x_range = range_overlap(x_range, (condition[2]..4000))
+    end
+  end
+
+  a_range = (1..4000)
+  groups['a']&.each do |condition|
+    if condition[1] == '<'
+      a_range = range_overlap(a_range, (0...condition[2]))
+    else #>
+      a_range = range_overlap(a_range, (condition[2]..4000))
+    end
+  end
+
+  s_range = (1..4000)
+  groups['s']&.each do |condition|
+    if condition[1] == '<'
+      s_range = range_overlap(s_range, (0...condition[2]))
+    else #>
+      s_range = range_overlap(s_range, (condition[2]..4000))
+    end
+  end
+
+  m_range = (1..4000)
+  groups['m']&.each do |condition|
+    if condition[1] == '<'
+      m_range = range_overlap(m_range, (0...condition[2]))
+    else #>
+      m_range = range_overlap(m_range, (condition[2]..4000))
+    end
+  end
+
+  puts "ranges: #{x_range}, #{a_range}, #{s_range}, #{m_range}"
+
+  if x_range == 0 || a_range == 0 || s_range == 0 || m_range == 0
+    puts "x*a*s*m = #{0}"
+
+    return 0
+  end
+
+  total_combos = x_range.size * a_range.size * s_range.size * m_range.size
+  puts "x*a*s*m = #{total_combos}"
+  [x_range, a_range, s_range, m_range]
+end
+
+def any_range_covers(x,m,a,s,ranges)
+  ranges.each do |range|
+    return true if range[0].include?(x) && range[1].include?(a) && range[2].include?(s) && range[3].include?(m)
+  end
+  false
+end
+
+def solution2(input)
+  parsed_input = parse_input(input)
+  workflows = parsed_input[0]
+  # puts workflows
+  paths = get_paths_to_target('A', workflows)
+  valid_paths = paths.filter{|p| p[0][-4..-1] == '<-in'}
+
+  ranges = valid_paths.map do |path|
+    # puts "#{path[0]}, #{path[1]}"
+    get_ranges_for_path(path)
+  end
+
+  total = 0
+  # count 4000*4000*4000*4000
+  # try inverses: first inverted overlap with second normal, etc
+
+  # (187..275) (1..1460) (1..4000) (1467..2800)
+
+  for x in (187..275)
+    puts "working on x #{x}, total #{total}"
+    for a in (1..1460)
+      for s in (1..4000)
+        for m in (1467..2800)
+          total += 1 if any_range_covers(x,m,a,s,ranges)
+        end
+      end
+    end
+  end
+
+  # total = 0
+  # ranges.each_with_index do |range, i|
+  #   to_add = range[0].size * range[1].size * range[2].size * range[4].size
+  #   ranges[0..i].each do |previous_range| 
+  #     x_overlap = range_overlap(range[0], previous_range[0])
+  #     a_overlap = range_overlap(range[1], previous_range[1])
+  #     s_overlap = range_overlap(range[2], previous_range[2])
+  #     m_overlap = range_overlap(range[3], previous_range[3])
+  #     to_add 
+  #   end
+  # end
+
+  # puts valid_combos.size
+  puts total
+
+
+end
+
+# solution(my_input)
+solution2(my_input)
+
+# X A S M
+# 2051..3245, 1..4000, 1..4000, 1..4000
+# 276..4000, 1..4000, 1..4000, 1..4000
+# 1..186,    1..4000, 1..4000, 1..4000
+# 324..4000, 1..4000, 1..4000, 1..4000
+# 497..4000, 1..4000, 1..4000, 1..4000
+# 2051..4000, 1..4000, 1..4000, 1..4000
+# 1257..4000, 1..4000, 1..4000, 1..4000
+
+# 1..186, 276..4000 / 4000 / 4000 / 4000
+# only 89 don't fit there, so this is 3911 * 4000 * 4000 * 4000 = 250,304,000,000,000
+
+# ranges: 1..4000, 1..4000, 1..4000, 2801..3242
+# ranges: 1..4000, 1..4000, 1..4000, 1..1466
+#         4000     / 4000 / 4000 /  1..1466, 2801..3242
+# only 1334 don't fit there. accounting for only 89 on x, this is..
+#         89 * 4000 * 4000 * 2666 = 3,796,384,000,000
+
+
+# ranges: 1..4000, 1461..4000, 1..4000, 1..4000
+#  1460 not covered. accounting for only 90 on x and  1335 on m, that's...
+#     89 * 2540 * 4000 * 1334 = 1,206,256,160,000
+
+# total covered this way: 
+# 250,304,000,000,000 + 3,796,384,000,000 + 1,206,256,160,000 
+# = 255,306,640,160,000 - too high
+# = 255306640160000 - too high
+
+# leaving ranges not covered as:
+# (187..275) (1..1460) (1..4000) (1467..2800)
+# total uncovered = 
+# 89 * 1460 * 4000 * 1325
+# = 688,682,000,000
+# total covered = (4000 * 4000 * 4000 * 4000) - 688,682,000,000
+# = 255,311,318,000,000
+
+
+# = 255306640160000 - too high
+# = 24911318000000 # too low

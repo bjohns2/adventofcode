@@ -126,9 +126,6 @@ def parse_input(input)
 end
 
 def step_beam(map, energized_map, location, direction)
-  # puts energized_map.map{|l| l.join('')}.join("\n")
-  # puts "\n\n"
-
   if direction == 'right'
     new_location = [location[0], location[1] + 1]
     return if location[1] + 1 >= map[0].size

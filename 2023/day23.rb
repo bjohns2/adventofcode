@@ -174,12 +174,13 @@ def find_start(map)
 end
 
 def find_end(map)
-  [map[-1], map[-1].index('.')]
+  [map.size - 1, map[-1].index('.')]
 end
 
 def print_map(map)
   map.each_with_index do |line, i|
-    puts line.join('|')
+    puts line.map{|char| "%03d" % char.to_i}.join ' '
+    # puts line.join('|')
   end
 end
 
@@ -193,55 +194,59 @@ def find_longest_from_cell(i, j, end_location, map, lookup, seen)
   end
 
   # If this subproblem is already solved
-  if (lookup[i][j] != -1)
+  # if (lookup[i][j] != -1)
+  if (lookup[i][j] > -1)
       return lookup[i][j]
   end
 
-  if (map[i][j] == '>')
-    return 1 + find_longest_from_cell(i, j+1, end_location, map, lookup, new_seen)
-  elsif 
-    (map[i][j] == 'v')
-    return 1 + find_longest_from_cell(i+1, j, end_location, map, lookup, new_seen)
-  end
+  # if (map[i][j] == '>')
+  #   return 1 + find_longest_from_cell(i, j+1, end_location, map, lookup, new_seen)
+  # elsif 
+  #   (map[i][j] == 'v')
+  #   return 1 + find_longest_from_cell(i+1, j, end_location, map, lookup, new_seen)
+  # end
 
   
-  up = -1
+  up = -10000
   if i-1 >= 0
     up_loc = [i-1, j]
-    if (['.'].include? map[up_loc[0]][up_loc[1]]) && (!seen.include?(up_loc))
+    if (['.', 'v', '>'].include? map[up_loc[0]][up_loc[1]]) && (!seen.include?(up_loc))
       up = find_longest_from_cell(i-1, j, end_location, map, lookup, new_seen)
     end
   end
 
-  down = -1
+  down = -10000
   if i+1 < map.size
     down_loc = [i+1, j]
     # puts "checking down #{down_loc}, it is #{map[down_loc[0]][down_loc[1]]} and seen is #{seen}, #{['.', 'V'].include? map[down_loc[0]][down_loc[1]] } #{!seen.include?(down_loc)}"
-    if (['.', 'v'].include? map[down_loc[0]][down_loc[1]]) && (!seen.include?(down_loc))
+    if (['.', 'v', '>'].include? map[down_loc[0]][down_loc[1]]) && (!seen.include?(down_loc))
       # puts "looking down"
       down = find_longest_from_cell(i+1, j, end_location, map, lookup, new_seen)
     end
   end
 
-  left = -1
+  left = -10000
   if j-1 >= 0
     left_loc = [i, j-1]
-    if (['.'].include? map[left_loc[0]][left_loc[1]]) && (!seen.include?(left_loc))
+    if (['.', 'v', '>'].include? map[left_loc[0]][left_loc[1]]) && (!seen.include?(left_loc))
       left = find_longest_from_cell(i, j-1, end_location, map, lookup, new_seen)
     end
   end
 
-  right = -1
+  right = -10000
   if j+1 < map[0].size
     right_loc = [i, j+1]
     # puts "checking right #{right_loc}, it is #{map[right_loc[0]][right_loc[1]]} and seen is #{seen}"
-    if (['.', '>'].include? map[right_loc[0]][right_loc[1]]) && (!seen.include?(right_loc))
+    if (['.', 'v', '>'].include? map[right_loc[0]][right_loc[1]]) && (!seen.include?(right_loc))
       # puts "looking right"
       right = find_longest_from_cell(i, j+1, end_location, map, lookup, new_seen)
     end
   end
 
   # puts "at #{i},#{j}: up #{up} down #{down} left #{left} right #{right}"
+  if up == -100 && down == -100 && left == -100 && right == -100
+    puts "nowhere to go from #{i}, #{j}, seen: #{seen}"
+  end
   lookup[i][j] = [up, down, left, right].max + 1
   return lookup[i][j]
 end
@@ -259,10 +264,12 @@ def solution(input)
   # print_map(lookup)
   # print_map(map)
 
-  puts "starting at #{start_loc}"
+  puts "starting at #{start_loc}, ending at #{end_loc}"
   puts find_longest_from_cell(start_loc[0], start_loc[1], end_loc, map, lookup, [start_loc])
-  # print_map(lookup)
+  print_map(lookup)
 
 end
 
 solution(my_input)
+
+# 1966 is low for p2

@@ -669,20 +669,30 @@ end
 
 def parse_input(input)
   lines = input.split("\n")
-  lines.map{|l| l.split(' ')}.map{|l| [l[0], l[1].to_i, l[2]]}
+  lines.map{|l| l.split(' ')}.map do |l| 
+    direction = 'R' if l[2][-2] == '0'
+    direction = 'D' if l[2][-2] == '1'
+    direction = 'L' if l[2][-2] == '2'
+    direction = 'U' if l[2][-2] == '3'
+    distance = (l[2][2..-3]).to_i(16)
+    [direction, distance, nil]
+  end
 end
 
-def handle_right(map, current_location)
-  new_location = [current_location[0], current_location[1] + 1]
-  if new_location[1] >= map[0].size
-    map.each {|l| l << '.'}
-  end
+def handle_right(map, current_location, steps)
+  (0...steps).each do |i|
+    new_location = [current_location[0], current_location[1] + 1]
   
-  map[new_location[0]][new_location[1]] = '-'
+    if new_location[1] >= map[0].size
+      map.each {|l| l << '.'}
+    end
+    
+    map[new_location[0]][new_location[1]] = '-'
+  end
   new_location
 end
 
-def handle_down(map, current_location)
+def handle_down(map, current_location, steps)
   new_location = [current_location[0] + 1, current_location[1]]
   if new_location[0] >= map.size
     map << ['.'] * map[0].size
@@ -752,7 +762,7 @@ def count_tiles(map)
   # marked_inside = parsed_input
   # marked_inside_/printed = marked_seen.map{|line| line.join(',')}.join("\n")
   # puts "\n\nmarked inside: \n#{marked_inside_printed}"
-  print_map(map)
+  # print_map(map)
   puts "insides:#{insides}"
 end
 
@@ -781,41 +791,43 @@ def solution(input)
   map = [['#']]
   current_location = [0,0]
   directions = parse_input(input)
+  puts "#{directions.size} directions"
   last_direction = 'U'
-  directions.each do |direction|
-    # puts "direction: #{direction.join(',')}"
+  print_map(map)
+  directions.each_with_index do |direction, i|
+    puts "calculationg direction #{i}"
     case direction[0]
     when 'R'
       map[current_location[0]][current_location[1]] = 'L' if last_direction == 'D'
       map[current_location[0]][current_location[1]] = 'F' if last_direction == 'U'
-      (0...direction[1]).each do |i|
-        current_location = handle_right(map,current_location)
-      end
+      # (0...direction[1]).each do |i|
+      current_location = handle_right(map,current_location, direction[1])
+      # end
       last_direction = 'R'
     when 'L'
       map[current_location[0]][current_location[1]] = 'J' if last_direction == 'D'
       map[current_location[0]][current_location[1]] = '7' if last_direction == 'U'
-      (0...direction[1]).each do |i|
-        current_location = handle_left(map,current_location)
-      end
+      # (0...direction[1]).each do |i|
+      current_location = handle_left(map,current_location, direction[1])
+      # end
       last_direction = 'L'
     when 'U'
       map[current_location[0]][current_location[1]] = 'L' if last_direction == 'L'
       map[current_location[0]][current_location[1]] = 'J' if last_direction == 'R'
-      (0...direction[1]).each do |i|
-        current_location = handle_up(map,current_location)
-      end
+      # (0...direction[1]).each do |i|
+      current_location = handle_up(map,current_location, direction[1])
+      # end
       last_direction = 'U'
     when 'D'
       map[current_location[0]][current_location[1]] = 'F' if last_direction == 'L'
       map[current_location[0]][current_location[1]] = '7' if last_direction == 'R'
-      (0...direction[1]).each do |i|
-        current_location = handle_down(map,current_location)
-      end
+      # (0...direction[1]).each do |i|
+      current_location = handle_down(map,current_location, direction[1])
+      # end
       last_direction = 'D'
     end
   end
-  print_map(map)
+  # print_map(map)
   # puts "\n\n"
   # flood_fill(map, 100, 150)
   # print_map(map)
@@ -823,7 +835,7 @@ def solution(input)
   count_tiles(map)
 end
 
-puts solution(my_input)
+puts solution(test_input)
 # 160576 too high
 # 81156 too high :()
 # 77300 too high!!

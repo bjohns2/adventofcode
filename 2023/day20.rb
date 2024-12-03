@@ -232,13 +232,18 @@ def solution(input)
   total_low_pulses = 0
   total_high_pulses = 0
   total_button_presses = 0
-  (0...500000).each do |i|
+  (0...5000000000000000).each do |i|
+    puts i if i%1000000 == 0
     pulses_to_handle = [Pulse.new(nil, 'broadcaster', 'low')]
     total_button_presses += 1
     while pulses_to_handle.size > 0
       pulse_to_handle = pulses_to_handle.shift
       total_low_pulses += 1 if pulse_to_handle.power == 'low'
       total_high_pulses += 1 if pulse_to_handle.power == 'high'
+      if pulse_to_handle.power == 'low' && pulse_to_handle.destination_node == 'rx'
+        puts "GOT IT ON PUSE #{i}" 
+        return 'hi'
+      end
       destination_node = nodes.find{|n| n.name == pulse_to_handle.destination_node}
       next if destination_node == nil
       new_pulses = destination_node.handle_pulse(pulse_to_handle)
@@ -259,3 +264,7 @@ def solution(input)
 end
 
 solution(my_input)
+
+# 5000000 is too low
+# 50000000 is too low
+# 500  is too low
