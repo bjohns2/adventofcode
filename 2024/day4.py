@@ -37,9 +37,40 @@ def xmases_from(i,j):
     point_xmases += 1
   return point_xmases
 
+def x_mases_from(i,j):
+  point_xmases = 0
+  # M.S
+  # .A.
+  # M.S
+  if point_has_letter(i-1,j-1,'M') and point_has_letter(i-1,j+1,'S') and point_has_letter(i+1,j-1,'M') and point_has_letter(i+1,j+1,'S'):
+    point_xmases += 1
+  # S.M
+  # .A.
+  # S.M
+  if point_has_letter(i-1,j-1,'S') and point_has_letter(i-1,j+1,'M') and point_has_letter(i+1,j-1,'S') and point_has_letter(i+1,j+1,'M'):
+    point_xmases += 1
+  # M.M
+  # .A.
+  # S.S
+  if point_has_letter(i-1,j-1,'M') and point_has_letter(i-1,j+1,'M') and point_has_letter(i+1,j-1,'S') and point_has_letter(i+1,j+1,'S'):
+    point_xmases += 1
+  # S.S
+  # .A.
+  # M.M
+  if point_has_letter(i-1,j-1,'S') and point_has_letter(i-1,j+1,'S') and point_has_letter(i+1,j-1,'M') and point_has_letter(i+1,j+1,'M'):
+    point_xmases += 1
+  return point_xmases
+
+# xmases = 0
+# for i,line in enumerate(lines):
+#   for j, char in enumerate(line):
+#     if char == 'X':
+#       xmases += xmases_from(i,j)
+# print(xmases)
+
 xmases = 0
 for i,line in enumerate(lines):
   for j, char in enumerate(line):
-    if char == 'X':
-      xmases += xmases_from(i,j)
+    if char == 'A':
+      xmases += x_mases_from(i,j)
 print(xmases)
