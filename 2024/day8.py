@@ -25,15 +25,20 @@ all_nodes = set()
 for locs in node_map.values():
   for i in range(len(locs)):
     for j in range(i+1, len(locs)):
+      all_nodes.add(f"({locs[i][0]},{locs[i][1]})")
+      all_nodes.add(f"({locs[j][0]},{locs[j][1]})")
       # print("loc", locs[i], 'x', locs[j])
       first_node_x = locs[i][0] + (locs[i][0] - locs[j][0])
       first_node_y = locs[i][1] + (locs[i][1] - locs[j][1])
+      while is_within_map(map, first_node_x, first_node_y):
+         all_nodes.add(f"({first_node_x},{first_node_y})")
+         first_node_x = first_node_x + (locs[i][0] - locs[j][0])
+         first_node_y = first_node_y + (locs[i][1] - locs[j][1])
+
       second_node_x = locs[j][0] + (locs[j][0] - locs[i][0])
       second_node_y = locs[j][1] + (locs[j][1] - locs[i][1])
-      # print(first_node_x, first_node_y)
-      # print(second_node_x, second_node_y)
-      if is_within_map(map, first_node_x, first_node_y):
-        all_nodes.add(f"({first_node_x},{first_node_y})")
-      if is_within_map(map, second_node_x, second_node_y):
-        all_nodes.add(f"({second_node_x},{second_node_y})")
+      while is_within_map(map, second_node_x, second_node_y):
+         all_nodes.add(f"({second_node_x},{second_node_y})")
+         second_node_x = second_node_x + (locs[j][0] - locs[i][0])
+         second_node_y = second_node_y + (locs[j][1] - locs[i][1])
 print(len(all_nodes))
