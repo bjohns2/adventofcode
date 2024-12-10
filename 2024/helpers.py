@@ -1,6 +1,9 @@
 def parse_map_from_input(input):
   return input.split("\n")
 
+def parse_int_map_from_input(input):
+  return [[int(i) for i in suba] for suba in input.split("\n")]
+
 def print_map(map):
   map_str = ""
   for row in map:
