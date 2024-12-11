@@ -27,8 +27,28 @@ def blink(rocks):
     new_rocks.insert(update[0], update[1])
   return new_rocks
 
-for i in range(0,25):
-  start_rocks = blink(start_rocks)
+cache = {}
 
-print(len(start_rocks))
- 
+def recursive_blink(rock, i):
+  rock_str = f"{rock},{i}"
+  if rock_str in cache:
+    return cache[rock_str]
+  if i == 0:
+    return 1
+  if rock == 0:
+    length = recursive_blink(1, i-1)
+  elif len(str(rock)) % 2 == 0:
+    slice_index = int(len(str(rock))/2)
+    first_half = int(str(rock)[:slice_index])
+    second_half = int(str(rock)[slice_index:])
+    length = recursive_blink(first_half, i-1) + recursive_blink(second_half, i-1)
+  else:
+    length = recursive_blink(rock*2024, i-1)
+  cache[rock_str] = length
+  return length
+
+total = 0
+for rock in start_rocks:
+  total += recursive_blink(rock, 75)
+  print(rock, total)
+print(total)
