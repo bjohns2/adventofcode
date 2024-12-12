@@ -34,7 +34,7 @@ def build_regions(map):
         all_regions[char].append(this_region)      
   return all_regions
 
-def calculate_permiter(region):
+def calculate_permiter(region,map):
   perimiter = set()
   for loc in region:
     perimiter.add((loc[0]+1,loc[1],'top'))
@@ -46,7 +46,36 @@ def calculate_permiter(region):
       pos = (loc[0],loc[1],dir)
       if pos in perimiter:
         perimiter.remove(pos)
-  return perimiter
+  simplfied_permiter = set()
+  # print('simplfied_permiter',simplfied_permiter)
+  for i in range(-1,len(map)+1):
+    continuous = False
+    # print('resetting continuous to false')
+    for dir in ['top','bottom']:
+      for j in range(-1,len(map[0])+1):
+        if (i,j,dir) in perimiter:
+          # print(f"top/bottom found ({i},{j},{dir}), continuous {continuous}")
+          if not continuous:
+            # print('adding and setting continuous to true ')
+            continuous = True
+            simplfied_permiter.add((i,j,dir))
+        else:
+          # print(f"top/bottom found ({i},{j},{dir}),setting continuous tofalse")
+          continuous = False
+  for j in range(-1,len(map[0])+1):
+    continuous = False
+    for dir in ['left','right']:
+      for i in range(-1,len(map)+1):
+        if (i,j,dir) in perimiter:
+          # print(f"left/right found ({i},{j},{dir}), continuous {continuous}")
+          if not continuous:
+            continuous = True
+            simplfied_permiter.add((i,j,dir))
+        else:
+          continuous = False
+  # print(perimiter)
+  # print('simplfied_permiter',simplfied_permiter)
+  return simplfied_permiter
 
 total = 0
 map = helpers.parse_map_from_input(input)
@@ -54,7 +83,8 @@ all_regions = build_regions(map)
 for key in all_regions:
   for region in all_regions[key]:
     area = len(region)
-    perimiter = len(calculate_permiter(region))
+    print('=====',key,'=====')
+    perimiter = len(calculate_permiter(region,map))
     print(key,":", area,perimiter)
     total += area * perimiter
 print('total:',total)
