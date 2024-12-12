@@ -9,3 +9,6 @@ def print_map(map):
   for row in map:
     map_str = map_str + "\n" +  row
   print(map_str)
+
+def flatten(xss):
+    return [x for xs in xss for x in xs]
