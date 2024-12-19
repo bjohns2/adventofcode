@@ -6,7 +6,18 @@ test_input = open("./2024/test_input.txt", "r").read()
 input = my_input
 
 MAX_MAP_COORDINATE = 70
-CORRUPTED_BYTES = 1024
+CORRUPTED_BYTES = 3027
+
+# This is me running a manual binary search lmao
+# 1024 end weight is 296
+# 2024 = 298
+# 2737 = 476
+# 3093 = cut off
+# min: 3022
+# max: 3027 first cut off
+
+# MAX_MAP_COORDINATE = 6
+# CORRUPTED_BYTES = 25
 
 
 MAP_SIZE = MAX_MAP_COORDINATE + 1
@@ -17,7 +28,9 @@ queue = [START_COORDINATE]
 weights = {START_COORDINATE: 0}
 
 raw_locs = [i.split(',') for i in input.split("\n")][:CORRUPTED_BYTES]
+# print('first failure:',raw_locs[3027])
 bad_locs = [(int(i[0]),int(i[1])) for i in raw_locs]
+print('last bad loc',bad_locs[-1])
 # print('bad_locs',bad_locs)
 
 def handle_position(co, weight):
@@ -59,4 +72,7 @@ def print_map():
 
 # print('weights',weights)
 # print_map()
-print('end weight:',weights[END_COORDINATE])
+if END_COORDINATE not in weights:
+  print('CUT OFF!!! fallen bytes:',CORRUPTED_BYTES)
+else:
+  print('end weight for ',CORRUPTED_BYTES,'fallen bytes is',weights[END_COORDINATE])
