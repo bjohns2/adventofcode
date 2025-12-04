@@ -33,12 +33,28 @@ def count_adjacents(loc, rows):
 
 def solution():
   total = 0
+  new_total = -1
   rows = input.split("\n")
-  for i,row in enumerate(rows):
-    for j,char in enumerate(row):
-      if char == '@':
-        adjacents = count_adjacents([i,j], rows)
-        total += 1 if adjacents < 4 else 0
+  while total != new_total:
+    # print(total, new_total)
+    # print(("\n").join(rows))
+    new_total = total
+    new_rows = []
+    for i,row in enumerate(rows):
+      new_row = ''
+      for j,char in enumerate(row):
+        if char == '@':
+          adjacents = count_adjacents([i,j], rows)
+          if adjacents < 4:
+            total += 1 
+            new_row = new_row + '.'
+          else:
+            new_row = new_row + '@'
+        else:
+          new_row = new_row + '.'
+      # print(new_row)
+      new_rows.append(new_row)
+    rows = new_rows
   return total
 
 
