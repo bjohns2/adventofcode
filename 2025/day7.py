@@ -3,28 +3,27 @@ test_input = open("./2025/test_input.txt", "r").read()
 
 input = my_input
 
-splits = 0
+cache = {}
 
-def split_beam(pos, line):
-  global splits
-  if line[pos[1]] == '^': # split
-    splits += 1
-    return([(pos[0]+1,pos[1]-1),(pos[0]+1,pos[1]+1)])
+def split_beam(pos, lines):
+  if pos in cache:
+    return cache[pos]
   else:
-    return [(pos[0]+1, pos[1])]
+    if pos[0] == len(lines):
+      result = 1
+    elif lines[pos[0]][pos[1]] == '^': # split
+      result = split_beam((pos[0]+1,pos[1]-1), lines) + split_beam((pos[0]+1,pos[1]+1), lines) #[(pos[0]+1,pos[1]-1),(pos[0]+1,pos[1]+1)])
+    else:
+      result = split_beam( (pos[0]+1,pos[1]), lines ) 
+    cache[pos] = result
+    return result
 
 
 def solution():
   lines = input.split("\n")
   start = (0,lines[0].find("S"))
-  current_positions = [start]
-  for i in range(1,len(lines)):
-    print(i,current_positions)
-    new_positions = []
-    for pos in current_positions:
-      new_positions += split_beam(pos, lines[i])
-    current_positions = list(set(new_positions))
-  return(len(current_positions)-1)
+  total = split_beam(start, lines)
+  return(total)
 
 print(solution())
-print(splits)
+# print(splits)
