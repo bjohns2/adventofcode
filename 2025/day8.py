@@ -29,7 +29,7 @@ def solution():
   # print('circuits start')
   # print(circuits)
   # print('connecitons')
-  for connection in sorted_connections[0:1000]: # bruh TEN SHORTEST read much??
+  for connection in sorted_connections: 
     # print(connection) # distance, loc 1, loc 2
     new_circuits = []
     i_circuit = None
@@ -41,8 +41,8 @@ def solution():
         j_circuit = circuit or j_circuit
       if connection[1] not in circuit and connection[2] not in circuit:
         new_circuits.append(circuit)
-    print("for connection",connection,"found circuits",i_circuit,'and',j_circuit)
-    print('i',i_circuit, 'j',j_circuit, 'c1',connection[1], 'c2', connection[2])
+    # print("for connection",connection,"found circuits",i_circuit,'and',j_circuit)
+    # print('i',i_circuit, 'j',j_circuit, 'c1',connection[1], 'c2', connection[2])
     if i_circuit == j_circuit == None:
       raise Exception('how could there be none')
     elif i_circuit == j_circuit:
@@ -50,15 +50,19 @@ def solution():
     else:
       new_circuits.append(i_circuit + j_circuit)
     circuits = new_circuits
-    for c in circuits:
-      print(c)
-  print('circuits when done')
+    if len(circuits) == 1:
+      print('last connection made:', connection, 'from', junctions[connection[1]], 'to', junctions[connection[2]])
+      print('mulitplying',junctions[connection[1]][0] ,'*',  junctions[connection[2]][0])
+      return(junctions[connection[1]][0] *  junctions[connection[2]][0])
+  #   for c in circuits:
+  #     print(c)
+  # print('circuits when done')
 
   sorted_circuits = sorted(circuits, key=lambda i: -1*len(i))
   for c in sorted_circuits:
     print(c)
   
-  return(len(sorted_circuits[0])*len(sorted_circuits[1])*len(sorted_circuits[2]))
+  # return(len(sorted_circuits[0])*len(sorted_circuits[1])*len(sorted_circuits[2]))
 
 
 print(solution())
